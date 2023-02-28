@@ -582,6 +582,23 @@ class Homebrew(object):
             self.changed = True
             self.message = 'Homebrew packages would be upgraded.'
             raise HomebrewException(self.message)
+
+        # check if updated are avaiable
+        cmd = [self.brew_path, 'outdated']
+        rc, out, err = self.module.run_command(cmd)
+        if rc == 0:
+            if out:
+                pkgs = out.splitlines()
+                self.changed_pkgs = pkgs
+                self.changed_count = len(pkgs)
+            else:
+                self.message = 'Homebrew packages already upgraded.'
+                return
+        else:
+            self.failed = True
+            self.message = 'Cannot run outdated command'
+            raise HomebrewException(self.message)
+
         cmd = [self.brew_path, 'upgrade'] + self.upgrade_options
 
         rc, out, err = self.module.run_command(cmd)
